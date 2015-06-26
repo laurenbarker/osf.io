@@ -11,7 +11,7 @@
                 <p>
                     <ul class="nav navbar-nav" data-bind="foreach: schema().pages">
                         <li>
-                            <a style="padding-bottom:0px;text-align:center;margin:2pxposition:absolute;width:100%" data-bind="text: title,
+                            <a style="padding-bottom:0px;text-align:center;margin:2px;position:absolute;width:100%" data-bind="text: title,
                                 click: $root.selectPage"></a>
 
                             <ul class="nav navbar-nav" data-bind="foreach: $root.schema().pages[$index()].questions">
