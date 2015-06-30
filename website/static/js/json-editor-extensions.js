@@ -256,7 +256,7 @@ JSONEditor.defaults.options.upload = function(type, file, cbs) {
 };
 
 JSONEditor.defaults.resolvers.unshift(function(schema) {
-    if (schema.type === 'string' && schema.format === 'url' && schema.options && schema.options.upload === true) {
+    if (schema.type === 'commentableString' && schema.format === 'url' && schema.options && schema.options.upload === true) {
         return 'myUpload';
     }
 });
@@ -325,11 +325,12 @@ JSONEditor.defaults.editors.myUpload = JSONEditor.defaults.editors.upload.extend
 
         this.filesWidget = new FilesWidget('registrationFilesGrid', nodeApiUrl + 'files/grid/', fangornOpts);
         this.filesWidget.init();
+        console.log(this.filesWidget);
 
     },
-    destroy: function() {
+    //destroy: function() {
         //this.filesWidget.destroy();
-    },
+    //},
     refreshPreview: function() {
         if (this.last_preview === this.preview_value) return;
         this.last_preview = this.preview_value;
