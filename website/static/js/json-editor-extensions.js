@@ -280,12 +280,13 @@ JSONEditor.defaults.editors.myUpload = JSONEditor.defaults.editors.upload.extend
             // File uploader
             this.uploader = document.createElement('div');
 
-            $(this.uploader).attr('id', 'registrationFilesGrid');
+            $(this.uploader).attr('id', 'treeGrid');
 
             this.uploader.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 folder = $(this).find($(event.target).attr('data-id'));
+
                 if (!self.preview_value) {
                     self.refreshPreview();
                 } else if (self.preview_value.kind === 'file') {
@@ -317,27 +318,30 @@ JSONEditor.defaults.editors.myUpload = JSONEditor.defaults.editors.upload.extend
                 self.files = row.data;
 
                 var tb = this;
-                var redir = new URI(row.data.nodeUrl);
-                redir.segment('files').segment(row.data.provider).segmentCoded(row.data.path.substring(1));
-                var fileurl = redir.toString() + '/';
+                if (row.data.kind === 'file') {
+                    var redir = new URI(row.data.nodeUrl);
+                    redir.segment('files').segment(row.data.provider).segmentCoded(row.data.path.substring(1));
+                    var fileurl = redir.toString() + '/';
+                }
+                
             }
         };
 
-        this.filesWidget = new FilesWidget('registrationFilesGrid', nodeApiUrl + 'files/grid/', fangornOpts);
+        this.filesWidget = new FilesWidget('treeGrid', nodeApiUrl + 'files/grid/', fangornOpts);
         this.filesWidget.init();
-        console.log(this.filesWidget);
-
     },
-    //destroy: function() {
-        //this.filesWidget.destroy();
-    //},
+    destroy: function() {
+        this.filesWidget.destroy();
+    },
     refreshPreview: function() {
         if (this.last_preview === this.preview_value) return;
         this.last_preview = this.preview_value;
 
         this.preview.innerHTML = '';
 
-        if (!this.preview_value) return;
+        if (!this.preview_value) {
+            return;
+        }
 
         var self = this;
 
