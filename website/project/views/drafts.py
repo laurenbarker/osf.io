@@ -22,8 +22,9 @@ ADMIN_USERNAMES = ['vndqr']
 @must_be_valid_project
 def send_for_review(node, *args, **kwargs):
     data = request.get_json()
-    
     node.is_pending_review = True
+
+    
 
 def get_all_draft_registrations(*args, **kwargs):
     count = request.args.get('count', 100)
@@ -79,7 +80,7 @@ def create_draft_registration(auth, node, *args, **kwargs):
         initiator=auth.user,
         branched_from=node,
         registration_schema=meta_schema,
-        registration_metadata=schema_data
+        registration_metadata=schema_data,
         schema_name = schema_name
     )
     draft.save()
