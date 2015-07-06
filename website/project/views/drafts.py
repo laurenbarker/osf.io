@@ -17,6 +17,29 @@ from website.project.metadata.utils import serialize_meta_schema, serialize_draf
 get_draft_or_fail = lambda pk: get_or_http_error(DraftRegistration, pk)
 get_schema_or_fail = lambda query: get_or_http_error(MetaSchema, query)
 
+ADMIN_USERNAMES = ['vndqr']
+
+@must_be_valid_project
+def send_for_review(node, *args, **kwargs):
+    data = request.get_json()
+    node.is_pending_review = True
+
+    
+
+def get_all_draft_registrations(*args, **kwargs):
+    count = request.args.get('count', 100)
+
+    all_drafts = DraftRegistration.find(
+        Q(
+            ('is_pending_review', 'eq', True) &
+            ('schema_name', 'eq', 'Prereg Prize')
+        )
+    )[:count]
+
+    return {
+        'drafts': [serialize_draft_registration(d) for d in all_drafts]
+    }
+
 @must_have_permission(ADMIN)
 @must_be_valid_project
 def get_draft_registration(auth, node, draft_pk, *args, **kwargs):
@@ -57,7 +80,8 @@ def create_draft_registration(auth, node, *args, **kwargs):
         initiator=auth.user,
         branched_from=node,
         registration_schema=meta_schema,
-        registration_metadata=schema_data
+        registration_metadata=schema_data,
+        schema_name = schema_name
     )
     draft.save()
     return serialize_draft_registration(draft, auth), http.CREATED
