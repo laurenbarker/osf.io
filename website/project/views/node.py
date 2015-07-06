@@ -690,7 +690,7 @@ def _view_project(node, auth, primary=False):
     else:
         in_dashboard = False
         dashboard_id = ''
-        
+
     view_only_link = auth.private_key or request.args.get('view_only', '').strip('/')
     anonymous = has_anonymous_link(node, auth)
 
