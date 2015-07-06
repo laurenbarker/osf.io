@@ -63,7 +63,7 @@
           <br />
           <div class="row">
             <div class="col-md-12">
-              <div class="form-group" data-bind="css: {has-succes: $data.isComplete}">
+              <div class="form-group" data-bind="css: {has-success: $data.isComplete}">
                 <span data-bind="with: $root.context($data)">
                   <div data-bind="disable: $root.readonly, template: {data: $data, name: type}"></div>
                 </span>
@@ -83,7 +83,7 @@
   </div>
 </script>
 
-<!-- Commnetable -->
+<!-- Commentable -->
 <script type="text/html" id="commentable">
     <h4> Comments </h4>
     <ul class="list-group" data-bind="foreach: {data: comments, as: 'comment'}">
