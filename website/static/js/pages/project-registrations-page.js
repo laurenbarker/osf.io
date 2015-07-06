@@ -1,7 +1,6 @@
 'use strict';
 require('css/registrations.css');
 
-var ko = require('knockout');
 var $ = require('jquery');
 
 var $osf = require('js/osfHelpers');
@@ -23,7 +22,7 @@ $(document).ready(function() {
             $('#editDraftsControl').removeClass('disabled');
             $('#editDraftsControl').tab('show');
         },
-        showManager: function() {            
+        showManager: function() {
             $('#draftsControl').tab('show');
         }
     });
