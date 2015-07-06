@@ -6,16 +6,18 @@ var $ = require('jquery');
 var Raven = require('raven-js');
 
 $(document).ready(function() {
+    var test = '/api/v1/drafts/'
 
     var request = $.ajax({
-        url:  '/api/v1/all_drafts/'
+        url: test
     });
     request.done(function(data) {
         console.log(data);
     });
     request.fail(function(xhr, textStatus, error) {
+        console.log(xhr);
         Raven.captureMessage('Failed to populate data', {
-            url: url,
+            url: test,
             textStatus: textStatus,
             error: error
         });
