@@ -3,6 +3,7 @@ import httplib as http
 
 from modularodm import Q
 
+from framework.auth import Auth
 from framework.mongo.utils import get_or_http_error
 from framework.exceptions import HTTPError
 
@@ -31,18 +32,18 @@ def send_for_review(node, *args, **kwargs):
         admin = User.load(uid)
         send_mail(admin.email, REVIEW_EMAIL, user=creator, src=node)
 
-def get_all_draft_registrations(*args, **kwargs):
+def get_all_draft_registrations(uid, *args, **kwargs):
+    user = User.load(uid)
+    auth = Auth(user)
     count = request.args.get('count', 100)
 
     all_drafts = DraftRegistration.find(
-        # Q(
-        #     ('is_pending_review', 'eq', True),
-        #     ('schema_name', 'eq', 'Prereg Prize')
-        # )
+        # Q('is_pending_review', 'eq', True) &
+        # Q('schema_name', 'eq' 'Prereg Prize')
     )[:count]
 
     return {
-        'drafts': [serialize_draft_registration(d) for d in all_drafts]
+        'drafts': [serialize_draft_registration(d, auth) for d in all_drafts]
     }
 
 @must_have_permission(ADMIN)
