@@ -7,6 +7,19 @@ var Raven = require('raven-js');
 
 var drafts;
 
+// var Uploader = function(data) {
+
+//     var self = this;
+
+//     self.selectedFileName = ko.observable('no file selected');
+
+//     $.extend(self, data);
+// };
+
+// module.exports = {
+//     Uploader: Uploader
+// };
+
 ko.bindingHandlers.enterkey = {
     init: function (element, valueAccessor, allBindings, viewModel) {
         var callback = valueAccessor();
@@ -21,8 +34,10 @@ ko.bindingHandlers.enterkey = {
     }
 };
 
+// should this not take data as a parameter? should it be a variable? should it not be in this file?
 function adminView(data) {
     var self = this;
+    //self.data = $.getJSON("/api/v1/drafts/");
     self.data = data.drafts;
 
     // REMOVE
@@ -39,6 +54,7 @@ function adminView(data) {
     }, this);
     self.sortBy = ko.observable('registration_metadata.q1.value');
 
+    // move these to an extension of the draft VM...if it fufills prereg?
     // variables for editing items in row
     self.edit = ko.observable(false);
     self.commentsSent = ko.observable('no');
@@ -100,6 +116,7 @@ function adminView(data) {
 
 }
 
+// should this apply the binding? does it even need to get data?
 $(document).ready(function() {
     var test = '/api/v1/drafts/';
     var request = $.ajax({
@@ -117,7 +134,7 @@ $(document).ready(function() {
     });
 });
 
-var deep_value = function(obj, path){
+var deepValue = function(obj, path){
     for (var i=0, path=path.split('.'), len=path.length; i<len; i++){
         obj = obj[path[i]];
     };
