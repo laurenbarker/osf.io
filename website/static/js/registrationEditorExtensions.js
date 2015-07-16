@@ -30,10 +30,9 @@ var limitOsfStorage = function(item) {
 
 var filePicker = function(element, valueAccessor, allBindings, viewModel, bindingContext) {
     viewModel.showUploader(true);       
-
+    
     var $root = bindingContext.$root;
     $root.currentQuestion.subscribe(function(question) {
-        var filePicker = question.extra.filePicker;
         if (filePicker) {
             // A hack to flush the old mithril controller.
             // It's unclear to me exactly why this is happening (after 3hrs), but seems
@@ -45,7 +44,7 @@ var filePicker = function(element, valueAccessor, allBindings, viewModel, bindin
             m.mount(document.getElementById(filePicker.fangornOpts.divID), null);
 
             filePicker.destroy();
-            delete question.extra.filePicker;
+            filePicker = null;
         }
     }, null, 'beforeChange');
 
@@ -125,7 +124,6 @@ var filePicker = function(element, valueAccessor, allBindings, viewModel, bindin
                     Fangorn.Utils.orderFolder.call(this, tree);
                 }
             }
-
         }
     );
     viewModel.extra.filePicker = fw;
@@ -140,8 +138,10 @@ ko.bindingHandlers.osfUploader = {
 var Uploader = function(data) {
 
     var self = this;
+    self._orig = data;
 
     self.selectedFileName = ko.observable('no file selected');
+    self.filePicker = null;
 
     $.extend(self, data);
 };

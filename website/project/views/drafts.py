@@ -136,7 +136,8 @@ def get_draft_registrations(auth, node, *args, **kwargs):
 
     drafts = DraftRegistration.find(
         Q('branched_from', 'eq', node) &
-        Q('initiator', 'eq', auth.user)
+        Q('initiator', 'eq', auth.user) &
+        Q('registered_node', 'eq', None)
     )[:count]
     return {
         'drafts': [serialize_draft_registration(d, auth) for d in drafts]
