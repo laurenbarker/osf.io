@@ -3542,7 +3542,7 @@ class DraftRegistrationApproval(Sanction):
 
     mode = Sanction.ANY
 
-    def _on_complete(self, user, token):
+    def _on_complete(self, user):
         pass  # draft approval state gets loaded dynamically from this record
 
     def _on_reject(self, user, token):

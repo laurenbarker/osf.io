@@ -4,7 +4,10 @@
     "flags": {
         "isApproved": false,
         "isPendingReview": false,
-        "paymentSent": false
+        "paymentSent": false,
+        "assignee": "none",
+        "isRejected": false,
+        "isSubmitted": false
     },
     "config": {
         "requiresApproval": true,
