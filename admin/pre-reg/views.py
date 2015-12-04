@@ -100,7 +100,7 @@ def get_drafts(request):
         'drafts': [utils.serialize_draft_registration(d) for d in all_drafts]
     }
 
-    paginator = Paginator(serialized_drafts['drafts'], 15)
+    paginator = Paginator(serialized_drafts['drafts'], 5)
 
     page = request.GET.get('page')
     try:
