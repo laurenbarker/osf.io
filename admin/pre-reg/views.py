@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 # from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 import json
 import httplib as http
@@ -98,8 +99,19 @@ def get_drafts(request):
     serialized_drafts = {
         'drafts': [utils.serialize_draft_registration(d) for d in all_drafts]
     }
+
+    paginator = Paginator(serialized_drafts['drafts'], 15)
+
+    page = request.GET.get('page')
+    try:
+        drafts = paginator.page(page)
+    except PageNotAnInteger:
+        drafts = paginator.page(1)
+    except EmptyPage:
+        drafts = paginator.page(paginator.num_pages)
+
     return JsonResponse(
-        serialized_drafts
+        dict(drafts=drafts.object_list)
     )
 
 # @login_required
