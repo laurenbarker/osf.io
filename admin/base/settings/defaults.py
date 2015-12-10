@@ -5,6 +5,7 @@ Django settings for the admin project.
 import os
 from urlparse import urlparse
 from website import settings as osf_settings
+# import local  # Build own local.py (used with postgres)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Quick-start development settings - unsuitable for production
@@ -14,10 +15,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = osf_settings.SECRET_KEY
 
-# TODO: generalize this authentication
-AUTHENTICATION_BACKENDS = (
-    'api.base.authentication.backends.ODMBackend',
-)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = osf_settings.DEBUG_MODE
@@ -25,6 +22,9 @@ DEBUG = osf_settings.DEBUG_MODE
 ALLOWED_HOSTS = [
     '.osf.io'
 ]
+
+# Email settings. Account created for testing. Password shouldn't be hardcoded
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Application definition
 
@@ -37,13 +37,16 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'admin.common_auth',
     'admin.base',
-    'admin.pre-reg',
+    'admin.pre_reg',
     'admin.spam',
 
     # 3rd party
     'raven.contrib.django.raven_compat',
     'webpack_loader',
 )
+
+# Custom user model (extends AbstractBaseUser)
+AUTH_USER_MODEL = 'common_auth.MyUser'
 
 # TODO: Are there more granular ways to configure reporting specifically related to the API?
 RAVEN_CONFIG = {
@@ -95,16 +98,15 @@ TEMPLATES = [
 # Postgres:
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',   # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-#         'NAME': 'mydb',                                       # Or path to database file if using sqlite3.
-#         # The following settings are not used with sqlite3:
-#         'USER': 'myuser',
-#         'PASSWORD': 'password',
-#         'HOST': 'localhost',                                  # Empty for localhost through domain sockets or           '127.0.0.1' for localhost through TCP.
-#         'PORT': '',                                           # Set to empty string for default.
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': local.POSTGRES_NAME,
+#         'USER': local.POSTGRES_USER,
+#         'PASSWORD': local.POSTGRES_PASSWORD,
+#         'HOST': local.POSTGRES_HOST,
+#         'PORT': '',
 #     }
 # }
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+# Postgres settings in local.py
 
 DATABASES = {
     'default': {
@@ -112,6 +114,7 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
 ROOT_URLCONF = 'admin.base.urls'
 WSGI_APPLICATION = 'admin.base.wsgi.application'
@@ -128,8 +131,8 @@ STATICFILES_DIRS = (
 LANGUAGE_CODE = 'en-us'
 
 WEBPACK_LOADER = {
-    #'DEFAULT': {
+    'DEFAULT': {
         'BUNDLE_DIR_NAME': 'public/js/',
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
-    #}
+    }
 }

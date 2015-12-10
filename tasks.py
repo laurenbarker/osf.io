@@ -90,11 +90,11 @@ def adminserver(port=8001):
     cmd = '{} python manage.py runserver {} --nothreading'.format(env, port)
     run(cmd, echo=True, pty=True)
 
-# TODO - create task to handle manage.py tasks after setting the settings_module
+# TODO - refactor? It is functional. e.g. 'invoke admin_task createsuperuser'
 @task
 def admin_task(args):
     """Run Admin manage.py command"""
-    cmd = 'DJANGO_SETTINGS_MODULE="api.base.settings" python manage.py ' + args
+    cmd = 'DJANGO_SETTINGS_MODULE="admin.base.settings" python manage.py ' + args
     run(cmd)
 
 SHELL_BANNER = """
@@ -147,7 +147,7 @@ TRANSACTION_WARNING = """
 To persist changes run 'commit()'.
 Keep in mind that changing documents will lock them.
 
-This feature can be disabled with the '--no-transactation' flag.
+This feature can be disabled with the '--no-transaction' flag.
 
 """
 
@@ -929,3 +929,7 @@ def update_citation_styles():
     from scripts import parse_citation_styles
     total = parse_citation_styles.main()
     print("Parsed {} styles".format(total))
+
+@task
+def clean(verbose=False):
+    run('find . -name "*.pyc" -delete', echo=True)

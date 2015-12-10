@@ -132,10 +132,8 @@ var Row = function(params, permission, reviewers) {
     self.username = params.initiator.emails[0].address;
     self.initiated = self.formatTime(params.initiated);
     self.updated = self.formatTime(params.updated);
-    self.status = ko.observable('active');
-    //params.isPendingApproval
-    //);
-    //variables for editing items in row
+    self.status = ko.observable(params.is_pending_approval ? 'pending approval': 'approved');
+
     self.proofOfPub = new ProofOfPub();
     self.paymentSent = new PaymentSent();
     self.notes = new Notes();
@@ -162,7 +160,7 @@ Row.prototype.goToDraft = function(data, event) {
     var self = this;
     if (self.editing() === false) {
         self.viewingDraft(true);
-        document.location.href = 'prereg_form/' + self.params.pk + '/';
+        document.location.href = 'drafts/' + self.params.pk + '/';
     }
 };
 
@@ -180,7 +178,7 @@ var AdminView = function(adminSelector, user, reviewers) {
     self.user = user;
     self.reviewers = reviewers;
 
-    self.getDrafts = $.getJSON.bind(null, "get_drafts/");
+    self.getDrafts = $.getJSON.bind(null, "drafts/");
 
     self.drafts = ko.observable([]);
     self.loading = ko.observable(true);

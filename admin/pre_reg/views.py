@@ -1,8 +1,7 @@
 import functools
 
-# from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required  # , user_passes_test
 from django.views.decorators.csrf import csrf_exempt
-# from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -12,9 +11,9 @@ import httplib as http
 
 from modularodm import Q
 
-import utils
+import serializers
+# from admin.common_auth.models import MyUser
 
-from framework.auth.core import User as OsfUser
 from framework.mongo.utils import get_or_http_error
 from framework.exceptions import HTTPError
 from website.project.model import MetaSchema, DraftRegistration
@@ -22,18 +21,6 @@ from website.exceptions import NodeStateError
 
 get_draft_or_error = functools.partial(get_or_http_error, DraftRegistration)
 
-# use update to directly insert into db
-
-# def get_prereg_users():
-#     """Retrieves users on the admin site who are in the prereg_group
-#     :return: List of usernames of those who are in the prereg_group
-#     """
-#     reviewers = []
-#     users = User.objects.all()
-#     for reviewer in users:
-#         if (is_in_prereg_group(reviewer)):
-#             reviewers.append(str(reviewer.username))
-#     return reviewers
 
 def is_in_prereg_group(user):
     """Determines whether a user is in the prereg_group
@@ -42,7 +29,8 @@ def is_in_prereg_group(user):
     """
     return user.groups.filter(name='prereg_group').exists()
 
-# @login_required
+
+@login_required
 # @user_passes_test(is_in_prereg_group)
 def prereg(request):
     """Redirects to prereg page if user has prereg access
@@ -58,7 +46,7 @@ def prereg(request):
         'username': 'user_placeholder',
         'admin': 'admin_placeholder'
     }
-    #reviewers = get_prereg_users()
+    # reviewers = MyUser.objects.prereg_users()
     reviewers = ['admin_placeholder']
 
     #context = {'user_info': user, 'reviewers': reviewers, 'user': request.user}
@@ -66,9 +54,10 @@ def prereg(request):
         'user_info': user,
         'reviewers': reviewers
     }
-    return render(request, 'pre-reg/prereg.html', context)
+    return render(request, 'pre_reg/prereg.html', context)
 
-# @login_required
+
+@login_required
 # @user_passes_test(is_in_prereg_group)
 def prereg_form(request, draft_pk):
     """Redirects to prereg form review page if user has prereg access
@@ -77,11 +66,12 @@ def prereg_form(request, draft_pk):
     """
     draft = get_draft_or_error(draft_pk)
     context = {
-        'draft': utils.serialize_draft_registration(draft)
+        'draft': serializers.serialize_draft_registration(draft)
     }
-    return render(request, 'pre-reg/edit_draft_registration.html', context)
+    return render(request, 'pre_reg/edit_draft_registration.html', context)
 
-# @login_required
+
+@login_required
 # @user_passes_test(is_in_prereg_group)
 def get_drafts(request):
     """Determines whether a user is in the general_administrator_group
@@ -97,7 +87,7 @@ def get_drafts(request):
         Q('approval', 'ne', None)
     )
     serialized_drafts = {
-        'drafts': [utils.serialize_draft_registration(d) for d in all_drafts]
+        'drafts': [serializers.serialize_draft_registration(d) for d in all_drafts]
     }
 
     paginator = Paginator(serialized_drafts['drafts'], 5)
@@ -114,10 +104,11 @@ def get_drafts(request):
         dict(drafts=drafts.object_list)
     )
 
-# @login_required
-# @user_passes_test(is_in_prereg_group)
+
 @csrf_exempt
-def approve_draft(request, draft_pk):  # TODO
+@login_required
+# @user_passes_test(is_in_prereg_group)
+def approve_draft(request, draft_pk):
     """Approves current draft
     :param user: Current logged in user
     :param draft_pk: Unique id for current draft
@@ -125,23 +116,15 @@ def approve_draft(request, draft_pk):  # TODO
     """
     draft = get_draft_or_error(draft_pk)
 
-    # TODO[lauren]: add proper authorizers to DraftRegistrationApproval
-    # params for approve function = self, user, and token
-    # user should be the admin
-    user = OsfUser.load('dsmpw')
-    draftRegistrationApproval = draft.approval
-
-    draftRegistrationApproval.add_authorizer(user)
-    token = draftRegistrationApproval.approval_state[user._id]['approval_token']
-    draftRegistrationApproval.approve(user, token)
-    draftRegistrationApproval.save()
-
+    user = request.user.osf_user
+    draft.approve(user)
     return JsonResponse({})
 
-# @login_required
-# @user_passes_test(is_in_prereg_group)
+
 @csrf_exempt
-def reject_draft(request, draft_pk):  # TODO
+@login_required
+# @user_passes_test(is_in_prereg_group)
+def reject_draft(request, draft_pk):
     """Rejects current draft
     :param user: Current logged in user
     :param draft_pk: Unique id for current draft
@@ -149,31 +132,21 @@ def reject_draft(request, draft_pk):  # TODO
     """
     draft = get_draft_or_error(draft_pk)
 
-    # TODO[lauren]: add proper authorizers to DraftRegistrationApproval
-    # need to pass self, user, and token
-    # user should be the admin
-    user = OsfUser.load('dsmpw')
-    draftRegistrationApproval = draft[0].approval
-
-    draftRegistrationApproval.add_authorizer(user)
-    token = draftRegistrationApproval.approval_state[user._id]['rejection_token']
-
-    draftRegistrationApproval.reject(user, token)
-    draftRegistrationApproval.save()
-
+    user = request.user.osf_user
+    draft.reject(user)
     return JsonResponse({})
 
 
-# @login_required
-# @user_passes_test(is_in_prereg_group)
 @csrf_exempt
+@login_required
+# @user_passes_test(is_in_prereg_group)
 def update_draft(request, draft_pk):
     """Updates current draft to save admin comments
 
     :param draft_pk: Unique id for current draft
     :return: DraftRegistration obj
     """
-    data = json.load(request)
+    data = json.loads(request.body)
     draft = get_draft_or_error(draft_pk)
 
     schema_data = data.get('schema_data', {})
@@ -182,8 +155,4 @@ def update_draft(request, draft_pk):
         draft.save()
     except (NodeStateError):
         raise HTTPError(http.BAD_REQUEST)
-    return JsonResponse(
-        {
-            'draft': utils.serialize_draft_registration(draft)
-        }
-    )
+    return JsonResponse(serializers.serialize_draft_registration(draft))

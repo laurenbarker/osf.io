@@ -504,6 +504,12 @@ var Draft = function(params, metaSchema) {
         );
     });
 
+    self.hasRequiredQuestions = ko.pureComputed(function() {
+        return self.metaSchema.flatQuestions().filter(function(q) {
+            return q.required;
+        }).length > 0;
+    });
+
     self.completion = ko.computed(function() {
         var complete = 0;
         var questions = self.metaSchema.flatQuestions()
@@ -646,50 +652,24 @@ Draft.prototype.submitForReview = function() {
     }
 };
 Draft.prototype.approve = function() {
-    var ret = $.Deferred();
-    bootbox.dialog({
-        title: 'Before you continue...',
-        message: 'Are you sure you want to approve this submission? This action is irreversible',
-        buttons: {
-            cancel: {
-                label: 'Cancel',
-                className: 'btn-default',
-                callback: function() {
-                    bootbox.hideAll();
-                    ret.reject(); 
-                }
-            },
-            approve: {
-                label: 'Approve',
-                class: 'btn-warning',
-                callback: ret.resolve
-            }
-        }                
-    });
-    return ret.promise();
+    return $osf.dialog(
+        'Before you continue...',
+        'Are you sure you want to approve this submission? This action is irreversible.',
+        'Approve',
+        {
+            actionButtonClass: 'btn-warning'
+        }
+    );
 };
-Draft.prototype.reject = function(confirmed) {
-    var ret = $.Deferred();
-    bootbox.dialog({
-        title: 'Before you continue...',
-        message: 'Are you sure you want to reject this submission? This action is irreversible',
-        buttons: {
-            cancel: {
-                label: 'Cancel',
-                className: 'btn-default',
-                callback: function() {
-                    bootbox.hideAll();
-                    ret.reject();
-                }
-            },
-            approve: {
-                label: 'Approve',
-                class: 'btn-warning',
-                callback: ret.resolve       
-            }
-        }                
-    });
-    return ret.promise();
+Draft.prototype.reject = function() {
+    return $osf.dialog(
+        'Before you continue...',
+        'Are you sure you want to reject this submission? This action is irreversible.',
+        'Reject',
+        {
+            actionButtonClass: 'btn-danger'
+        }
+    );
 };
 
 /**
@@ -1127,7 +1107,7 @@ RegistrationEditor.prototype.save = function() {
             schema_data: data
         });
     }
-    request.fail(function(err, status, xhr) {
+    request.fail(function(xhr, status, error) {
         Raven.captureMessage('Could not save draft registration', {
             url: self.urls.update.replace('{draft_pk}', self.draft().pk),
             textStatus: status,
@@ -1143,12 +1123,13 @@ RegistrationEditor.prototype.approveDraft = function() {
 
     var draft = self.draft();
     draft.approve().done(function() {
+        $osf.block();
         $.post(self.urls.approve.replace('{draft_pk}', draft.pk))
             .done(function() {
                 window.location.assign(self.urls.list);
             }).fail(function() {
                 bootbox.alert('There was a problem approving this draft.' + osfLanguage.REFRESH_OR_SUPPORT);
-            });
+            }).always($osf.unblock);
     });
 };
 RegistrationEditor.prototype.rejectDraft = function() {
@@ -1156,12 +1137,13 @@ RegistrationEditor.prototype.rejectDraft = function() {
 
     var draft = self.draft();
     draft.reject().done(function() {
+        $osf.block();
         $.post(self.urls.reject.replace('{draft_pk}', draft.pk))
             .done(function() {
                 window.location.assign(self.urls.list);
             }).fail(function() {
                 bootbox.alert('There was a problem rejecting this draft.' + osfLanguage.REFRESH_OR_SUPPORT);
-            });
+            }).always($osf.unblock);
     });
 };
 

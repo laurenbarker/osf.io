@@ -1,4 +1,6 @@
-var $ = require('jQuery');
+'use strict';
+
+var $ = require('jquery');
 
 var $osf = require('js/osfHelpers');
 var registrationUtils = require('js/registrationUtils');
@@ -9,10 +11,10 @@ $(document).ready(function() {
     var draftData = window.contextVars.draft;
 
     var draftEditor = new RegistrationEditor({
-	update: '/admin/pre-reg/update_draft/{draft_pk}/',
-	approve: '/admin/pre-reg/approve_draft/{draft_pk}/',
-	reject: '/admin/pre-reg/reject_draft/{draft_pk}/',
-        list: '/admin/pre-reg/'
+	update: '/admin/pre_reg/drafts/{draft_pk}/update/',
+	approve: '/admin/pre_reg/drafts/{draft_pk}/approve/',
+	reject: '/admin/pre_reg/drafts/{draft_pk}/reject/',
+        list: '/admin/pre_reg/'
     }, 'registrationEditor', true);
 
     var draft = new registrationUtils.Draft(draftData);
