@@ -67,7 +67,7 @@ var PaymentSent = function() {
     var self = this;
     self.edit = ko.observable(false);
     self.paymentSent = ko.observable('no');
-    self.paymentSentList = ko.observableArray(['Yes', 'No']);
+    self.paymentSentList = ko.observableArray(['No', 'Yes']);
 };
 
 PaymentSent.prototype.editItem = function() {
