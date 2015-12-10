@@ -233,7 +233,7 @@ $(document).ready(function() {
 /**
 * Gets value from nested properties.
 *
-* @param  {Dict}    obj    The object to find value from
+* @param  {Object}    obj    The object to find value from
 * @param  {String}  path   Path to nested property
 * @return {String}  
 */
