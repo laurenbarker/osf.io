@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import migrations
-from django.core.paginator import Paginator
 
 from osf.models import OSFUser
 from osf.models import NotificationSubscription
@@ -18,28 +17,25 @@ logging.basicConfig(level=logging.INFO)
 def add_reviews_notification_setting(*args, **kwargs):
     active_users = OSFUser.objects.filter(date_confirmed__isnull=False).exclude(date_disabled__isnull=False).exclude(is_active=False).order_by('id')
     total_active_users = active_users.count()
+    reviews_notification = 'global_reviews'
 
     logger.info('About to add a global_reviews setting for {} users.'.format(total_active_users))
 
-    paginated_users = Paginator(active_users, 1000)
-
     total_created = 0
-    for page_num in paginated_users.page_range:
-        for user in paginated_users.page(page_num).object_list:
-            user_subscription_id = to_subscription_key(user._id, 'global_reviews')
+    for user in active_users.iterator():
+        user_subscription_id = to_subscription_key(user._id, reviews_notification)
 
-            subscription = NotificationSubscription.load(user_subscription_id)
-            if not subscription:
-                logger.info('No {} subscription found for user {}. Subscribing...'.format('global_reviews', user._id))
-                subscription = NotificationSubscription(_id=user_subscription_id, owner=user, event_name='global_reviews')
-                subscription.save()  # Need to save in order to access m2m fields
-                subscription.add_user_to_subscription(user, 'email_transactional')
-                subscription.save()
-            else:
-                logger.info('User {} already has a {} subscription'.format(user._id, 'global_reviews'))
-            total_created += 1
+        subscription = NotificationSubscription.load(user_subscription_id)
+        if not subscription:
+            logger.info('No {} subscription found for user {}. Subscribing...'.format(reviews_notification, user._id))
+            subscription = NotificationSubscription(_id=user_subscription_id, owner=user, event_name=reviews_notification)
+            subscription.save()  # Need to save in order to access m2m fields
+            subscription.add_user_to_subscription(user, 'email_transactional')
+        else:
+            logger.info('User {} already has a {} subscription'.format(user._id, reviews_notification))
+        total_created += 1
 
-        logger.info('Added subscriptions for {}/{} users'.format(total_created, total_active_users))
+    logger.info('Added subscriptions for {}/{} users'.format(total_created, total_active_users))
 
 
 class Migration(migrations.Migration):
